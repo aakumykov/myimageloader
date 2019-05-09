@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
-public class Qwerty {
+public class MyImageLoader {
 
     public static void loadImageToContainer(
             Context context,
@@ -37,7 +37,7 @@ public class Qwerty {
         final Drawable errorDrawable = context.getResources().getDrawable(errorPlaceholderResourceId);
 
         imageContainer.addView(progressBar);
-        MyUtils.show(imageContainer);
+        Utils.show(imageContainer);
 
         Glide.with(context)
                 .load(imageURL)
