@@ -51,11 +51,7 @@ public class MyImageLoader {
             return;
         }
 
-        // Показываю крутилку ожидания изображения
-        ProgressBar progressBar = new ProgressBar(context);
-        progressBar.setLayoutParams(layoutParams);
-        imageContainer.addView(progressBar);
-        Utils.show(imageContainer);
+        showImageThrobber(context, layoutParams, imageContainer);
 
         // Загружаю картинку
         Glide.with(context)
@@ -69,9 +65,29 @@ public class MyImageLoader {
 
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
+                        //dispalyImageResource(imageContainer, imageView, errorDrawable);
+                        //showImageThrobber(context, layoutParams, imageContainer);
+                    }
+
+                    @Override
+                    public void onLoadStarted(@Nullable Drawable placeholder) {
+                        super.onLoadStarted(placeholder);
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
                         dispalyImageResource(imageContainer, imageView, errorDrawable);
                     }
                 });
+    }
+
+    private static void showImageThrobber(Context context, ViewGroup.LayoutParams layoutParams, ViewGroup imageContainer) {
+        // Показываю крутилку ожидания изображения
+        ProgressBar progressBar = new ProgressBar(context);
+        progressBar.setLayoutParams(layoutParams);
+        imageContainer.addView(progressBar);
+        Utils.show(imageContainer);
     }
 
     private static void dispalyImageResource(ViewGroup imageContainer, ImageView imageView, Drawable imageResource) {
