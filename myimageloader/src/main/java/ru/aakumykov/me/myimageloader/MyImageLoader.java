@@ -76,7 +76,11 @@ public class MyImageLoader {
 
     private static void dispalyImageResource(ViewGroup imageContainer, ImageView imageView, Drawable imageResource) {
         imageView.setImageDrawable(imageResource);
-        imageContainer.removeViewAt(0);
+
+//        int childCount = imageContainer.getChildCount();
+//        if (childCount)
+        imageContainer.removeAllViews();
+//        imageContainer.removeViewAt(0);
         imageContainer.addView(imageView);
     }
 }
