@@ -2,6 +2,7 @@ package ru.aakumykov.me.myimageloader;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -18,6 +19,11 @@ import com.bumptech.glide.request.transition.Transition;
 
 public class MyImageLoader {
 
+    public interface Callbacks {
+        void onImageLoadSuccess(Drawable imageDrawable);
+        void onImageLoadError();
+    }
+
     private static final String TAG = "MyImageLoader";
     private static ViewGroup.LayoutParams sLayoutParams;
     private static Integer sImageErrorResourceId;
@@ -25,10 +31,32 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             Context context,
             ViewGroup container,
-            String imageURL,
-            boolean ignoreCache
+            String imageURL
     ) {
-        loadImageToContainer(context, container, imageURL, ignoreCache, null);
+        loadImageToContainer(
+                context,
+                container,
+                imageURL,
+                false,
+                null,
+                null
+        );
+    }
+
+    public static void loadImageToContainer(
+            Context context,
+            ViewGroup container,
+            String imageURL,
+            Callbacks callbacks
+    ) {
+        loadImageToContainer(
+                context,
+                container,
+                imageURL,
+                false,
+                null,
+                callbacks
+        );
     }
 
     public static void loadImageToContainer(
@@ -36,7 +64,8 @@ public class MyImageLoader {
             final ViewGroup container,
             String imageURL,
             boolean ignoreCache,
-            @Nullable Integer imageErrorResourceId
+            @Nullable Integer errorPlaceholderId,
+            @Nullable final Callbacks callbacks
     ) {
         if (null == sLayoutParams) {
             sLayoutParams = new ViewGroup.LayoutParams(
@@ -45,8 +74,8 @@ public class MyImageLoader {
             );
         }
 
-        if (null != imageErrorResourceId)
-            sImageErrorResourceId = imageErrorResourceId;
+        if (null != errorPlaceholderId)
+            sImageErrorResourceId = errorPlaceholderId;
 
         RequestBuilder<Drawable> requestBuilder = Glide.with(context).load(imageURL);
 
@@ -58,6 +87,8 @@ public class MyImageLoader {
                 {
                     @Override public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         displayImage(context, resource, container);
+                        if (null != callbacks)
+                            callbacks.onImageLoadSuccess(resource);
                     }
 
                     @Override public void onLoadCleared(@Nullable Drawable placeholder) {
@@ -72,6 +103,8 @@ public class MyImageLoader {
                     @Override public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         super.onLoadFailed(errorDrawable);
                         showImageError(context, container);
+                        if (null != callbacks)
+                            callbacks.onImageLoadError();
                     }
                 });
     }
