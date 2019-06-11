@@ -20,15 +20,15 @@ public class MyImageLoader {
     private static ViewGroup.LayoutParams sLayoutParams;
     private static Integer sImageErrorResourceId;
 
-    public static void loadImage2Container(
+    public static void loadImageToContainer(
             Context context,
             String imageURL,
             ViewGroup container
     ) {
-        loadImage2Container(context, container, imageURL, null);
+        loadImageToContainer(context, container, imageURL, null);
     }
 
-    public static void loadImage2Container(
+    public static void loadImageToContainer(
             final Context context,
             final ViewGroup container,
             String imageURL,
