@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
@@ -23,15 +25,17 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             Context context,
             ViewGroup container,
-            String imageURL
+            String imageURL,
+            boolean ignoreCache
     ) {
-        loadImageToContainer(context, container, imageURL, null);
+        loadImageToContainer(context, container, imageURL, ignoreCache, null);
     }
 
     public static void loadImageToContainer(
             final Context context,
             final ViewGroup container,
             String imageURL,
+            boolean ignoreCache,
             @Nullable Integer imageErrorResourceId
     ) {
         if (null == sLayoutParams) {
@@ -44,9 +48,12 @@ public class MyImageLoader {
         if (null != imageErrorResourceId)
             sImageErrorResourceId = imageErrorResourceId;
 
-        Glide.with(context)
-                .load(imageURL)
-                //.diskCacheStrategy(DiskCacheStrategy.NONE)
+        RequestBuilder<Drawable> requestBuilder = Glide.with(context).load(imageURL);
+
+        if (ignoreCache)
+            requestBuilder.diskCacheStrategy(DiskCacheStrategy.NONE);
+
+        requestBuilder
                 .into(new CustomTarget<Drawable>()
                 {
                     @Override public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
