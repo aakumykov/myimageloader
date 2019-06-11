@@ -22,8 +22,8 @@ public class MyImageLoader {
 
     public static void loadImageToContainer(
             Context context,
-            String imageURL,
-            ViewGroup container
+            ViewGroup container,
+            String imageURL
     ) {
         loadImageToContainer(context, container, imageURL, null);
     }
