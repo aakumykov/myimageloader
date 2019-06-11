@@ -2,7 +2,7 @@ package ru.aakumykov.me.myimageloader;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -16,87 +16,90 @@ import com.bumptech.glide.request.transition.Transition;
 
 public class MyImageLoader {
 
-    public static void loadImageToContainer(
+    private static final String TAG = "MyImageLoader";
+    private static ViewGroup.LayoutParams sLayoutParams;
+    private static Integer sImageErrorResourceId;
+
+    public static void loadImage2Container(
             Context context,
-            final ViewGroup imageContainer,
             String imageURL,
-            int errorPlaceholderResourceId
+            ViewGroup container
     ) {
-        // Проверяю аргументы, кроме imageURL.
-        if (null == context)
-            throw new IllegalArgumentException("There is no context supplied.");
+        loadImage2Container(context, container, imageURL, null);
+    }
 
-        if (null == imageContainer)
-            throw new IllegalArgumentException("There is no image container supplied.");
-
-        if (errorPlaceholderResourceId <= 0) {
-            throw new IllegalArgumentException("Illegal errorPlaceholder resourceId");
+    public static void loadImage2Container(
+            final Context context,
+            final ViewGroup container,
+            String imageURL,
+            @Nullable Integer imageErrorResourceId
+    ) {
+        if (null == sLayoutParams) {
+            sLayoutParams = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
         }
 
-        // Готовлю программный ImageView и errorDrawable
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
+        if (null != imageErrorResourceId)
+            sImageErrorResourceId = imageErrorResourceId;
 
-        final ImageView imageView = new ImageView(context);
-                        imageView.setLayoutParams(layoutParams);
-                        imageView.setAdjustViewBounds(true);
-
-        final Drawable errorDrawable = context.getResources().getDrawable(errorPlaceholderResourceId);
-
-        // Проверяю imageURL
-        if (TextUtils.isEmpty(imageURL)) {
-            dispalyImageResource(imageContainer, imageView, errorDrawable);
-            return;
-        }
-
-        showImageThrobber(context, layoutParams, imageContainer);
-
-        // Загружаю картинку
         Glide.with(context)
                 .load(imageURL)
                 //.diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(new CustomTarget<Drawable>() {
-                    @Override
-                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                        dispalyImageResource(imageContainer, imageView, resource);
+                .into(new CustomTarget<Drawable>()
+                {
+                    @Override public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        displayImage(context, resource, container);
                     }
 
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-                        //dispalyImageResource(imageContainer, imageView, errorDrawable);
-                        //showImageThrobber(context, layoutParams, imageContainer);
+                    @Override public void onLoadCleared(@Nullable Drawable placeholder) {
+
                     }
 
-                    @Override
-                    public void onLoadStarted(@Nullable Drawable placeholder) {
+                    @Override public void onLoadStarted(@Nullable Drawable placeholder) {
                         super.onLoadStarted(placeholder);
+                        showImageThrobber(context, container);
                     }
 
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                    @Override public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         super.onLoadFailed(errorDrawable);
-                        dispalyImageResource(imageContainer, imageView, errorDrawable);
+                        showImageError(context, container);
                     }
                 });
     }
 
-    private static void showImageThrobber(Context context, ViewGroup.LayoutParams layoutParams, ViewGroup imageContainer) {
-        // Показываю крутилку ожидания изображения
+    private static void showImageThrobber(Context context, ViewGroup container) {
         ProgressBar progressBar = new ProgressBar(context);
-        progressBar.setLayoutParams(layoutParams);
-        imageContainer.addView(progressBar);
-        Utils.show(imageContainer);
+        progressBar.setLayoutParams(sLayoutParams);
+
+        container.removeAllViews();
+        container.addView(progressBar);
     }
 
-    private static void dispalyImageResource(ViewGroup imageContainer, ImageView imageView, Drawable imageResource) {
-        imageView.setImageDrawable(imageResource);
+    private static void showImageError(Context context, ViewGroup container) {
+        int resourceId = (null == sImageErrorResourceId) ? R.drawable.ic_broken_image : sImageErrorResourceId;
+        displayImage(context, resourceId, container);
+    }
 
-//        int childCount = imageContainer.getChildCount();
-//        if (childCount)
-        imageContainer.removeAllViews();
-//        imageContainer.removeViewAt(0);
-        imageContainer.addView(imageView);
+    private static <T> void displayImage(Context context, T image, ViewGroup container) {
+        ImageView imageView = new ImageView(context);
+        imageView.setLayoutParams(sLayoutParams);
+        imageView.setAdjustViewBounds(true);
+
+        if (image instanceof Drawable) {
+            imageView.setImageDrawable((Drawable)image);
+        }
+        else if (image instanceof Integer && (Integer)image > 0) {
+            imageView.setImageResource((Integer)image);
+        }
+        else {
+            Log.e(TAG, "Illegal type of image: "+image);
+            showImageError(context, container);
+            return;
+        }
+
+        container.removeAllViews();
+        container.addView(imageView);
     }
 }
