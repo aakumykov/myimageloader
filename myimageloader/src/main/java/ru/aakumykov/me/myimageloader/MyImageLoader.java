@@ -126,6 +126,7 @@ public class MyImageLoader {
         ImageView imageView = new ImageView(context);
         imageView.setLayoutParams(sLayoutParams);
         imageView.setAdjustViewBounds(true);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         if (image instanceof Drawable) {
             imageView.setImageDrawable((Drawable)image);
