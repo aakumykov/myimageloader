@@ -47,6 +47,23 @@ public class MyImageLoader {
             Context context,
             ViewGroup container,
             String imageURL,
+            int errorPlaceholderId
+    ) {
+        MyImageLoader.loadImageToContainer(
+                context,
+                container,
+                imageURL,
+                false,
+                errorPlaceholderId,
+                null
+        );
+    }
+
+    @Deprecated
+    public static void loadImageToContainer(
+            Context context,
+            ViewGroup container,
+            String imageURL,
             Callbacks callbacks
     ) {
         loadImageToContainer(
