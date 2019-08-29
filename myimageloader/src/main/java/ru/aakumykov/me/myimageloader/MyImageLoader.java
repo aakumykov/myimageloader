@@ -87,7 +87,7 @@ public class MyImageLoader {
         if (null == sLayoutParams) {
             sLayoutParams = new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT
             );
         }
 
