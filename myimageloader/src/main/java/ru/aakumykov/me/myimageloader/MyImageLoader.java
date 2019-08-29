@@ -2,12 +2,9 @@ package ru.aakumykov.me.myimageloader;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.telecom.Call;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,12 +30,12 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             Context context,
             String imageURL,
-            ViewGroup container
+            ImageView targetImageView
     ) {
         MyImageLoader.loadImageToContainer(
                 context,
                 imageURL,
-                container,
+                targetImageView,
                 null,
                 null,
                 null,
@@ -50,14 +47,14 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             Context context,
             String imageURL,
-            ViewGroup container,
+            ImageView targetImageView,
             int loadingPlaceholderId,
             int errorPlaceholderId
     ) {
         MyImageLoader.loadImageToContainer(
                 context,
                 imageURL,
-                container,
+                targetImageView,
                 loadingPlaceholderId,
                 errorPlaceholderId,
                 null,
@@ -69,13 +66,13 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             Context context,
             String imageURL,
-            ViewGroup container,
+            ImageView targetImageView,
             Callbacks callbacks
     ) {
         MyImageLoader.loadImageToContainer(
                 context,
                 imageURL,
-                container,
+                targetImageView,
                 null,
                 null,
                 null,
@@ -87,7 +84,7 @@ public class MyImageLoader {
     public static void loadImageToContainer(
             final Context context,
             final String imageURL,
-            final ViewGroup container,
+            final ImageView targetImageView,
             @Nullable final Integer loadingPlaceholderId,
             @Nullable final Integer errorPlaceholderId,
             @Nullable final Boolean ignoreCache,
@@ -112,7 +109,7 @@ public class MyImageLoader {
                 .into(new CustomTarget<Drawable>()
                 {
                     @Override public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                        displayImage(context, resource, container, errorPlaceholderId);
+                        displayImage(context, resource, targetImageView, errorPlaceholderId);
 
                         if (null != callbacks)
                             callbacks.onImageLoadSuccess(resource);
@@ -125,13 +122,13 @@ public class MyImageLoader {
                     @Override public void onLoadStarted(@Nullable Drawable placeholder) {
                         super.onLoadStarted(placeholder);
 
-                        showImageLoading(context, container, loadingPlaceholderId);
+                        showImageLoading(context, targetImageView, loadingPlaceholderId);
                     }
 
                     @Override public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         super.onLoadFailed(errorDrawable);
 
-                        showImageError(context, container, errorPlaceholderId);
+                        showImageError(context, targetImageView, errorPlaceholderId);
 
                         if (null != callbacks)
                             callbacks.onImageLoadError();
@@ -139,50 +136,35 @@ public class MyImageLoader {
                 });
     }
 
+    // Отмена загрузки
+    public static void cancelLoading(final Context context, final ImageView imageView) {
+        Glide.with(context).clear(imageView);
+    }
+
 
     // Вспомогательные методы
-    private static <T> void displayImage(Context context, T image, ViewGroup container, @Nullable Integer errorPlaceholderId) {
-        ImageView imageView = new ImageView(context);
-        imageView.setLayoutParams(sLayoutParams);
-        imageView.setAdjustViewBounds(true);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+    private static <T> void displayImage(Context context, T image, ImageView targetImageView, @Nullable Integer errorPlaceholderId) {
 
         if (image instanceof Drawable) {
-            imageView.setImageDrawable((Drawable)image);
+            targetImageView.setImageDrawable((Drawable)image);
         }
         else if (image instanceof Integer && (Integer)image > 0) {
-            imageView.setImageResource((Integer)image);
+            targetImageView.setImageResource((Integer)image);
         }
         else {
             Log.e(TAG, "Illegal type of image: "+image);
-            showImageError(context, container, errorPlaceholderId);
-            return;
+            showImageError(context, targetImageView, errorPlaceholderId);
         }
-
-        container.removeAllViews();
-        container.addView(imageView);
     }
 
-    private static void showImageLoading(Context context, ViewGroup container, @Nullable Integer loadingPlaceholderId) {
-        View placeholderView;
-
-        if (null == loadingPlaceholderId) {
-            placeholderView = new ProgressBar(context);
-
-        }
-        else {
-            Drawable drawable = context.getResources().getDrawable(loadingPlaceholderId);
-            placeholderView = new ImageView(context);
-            ((ImageView) placeholderView).setImageDrawable(drawable);
-        }
-
-        placeholderView.setLayoutParams(sLayoutParams);
-
-        container.removeAllViews();
-        container.addView(placeholderView);
+    private static void showImageLoading(Context context, ImageView targetImageView, @Nullable Integer loadingPlaceholderId) {
+        Drawable drawable = context.getResources().getDrawable(
+                (null != loadingPlaceholderId) ? loadingPlaceholderId : R.drawable.ic_broken_image
+        );
+        targetImageView.setImageDrawable(drawable);
     }
 
-    private static void showImageError(Context context, ViewGroup container, @Nullable Integer errorPlaceholderId) {
+    private static void showImageError(Context context, ImageView targetImageView, @Nullable Integer errorPlaceholderId) {
         Drawable errorPlaceholder = context.getResources().getDrawable(
                 (null == errorPlaceholderId) ? R.drawable.ic_broken_image : errorPlaceholderId
         );
@@ -191,7 +173,6 @@ public class MyImageLoader {
         imageView.setLayoutParams(sLayoutParams);
         imageView.setImageDrawable(errorPlaceholder);
 
-        container.removeAllViews();
-        container.addView(imageView);
+        targetImageView.setImageDrawable(errorPlaceholder);
     }
 }
