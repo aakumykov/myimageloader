@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.telecom.Call;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -112,6 +113,7 @@ public class MyImageLoader {
                 {
                     @Override public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         displayImage(context, resource, container, errorPlaceholderId);
+
                         if (null != callbacks)
                             callbacks.onImageLoadSuccess(resource);
                     }
@@ -122,12 +124,15 @@ public class MyImageLoader {
 
                     @Override public void onLoadStarted(@Nullable Drawable placeholder) {
                         super.onLoadStarted(placeholder);
-                        showImageThrobber(context, container, loadingPlaceholderId);
+
+                        showImageLoading(context, container, loadingPlaceholderId);
                     }
 
                     @Override public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         super.onLoadFailed(errorDrawable);
+
                         showImageError(context, container, errorPlaceholderId);
+
                         if (null != callbacks)
                             callbacks.onImageLoadError();
                     }
@@ -136,19 +141,6 @@ public class MyImageLoader {
 
 
     // Вспомогательные методы
-    private static void showImageThrobber(Context context, ViewGroup container, @Nullable Integer loadingPlaceholderId) {
-        ProgressBar progressBar = new ProgressBar(context);
-        progressBar.setLayoutParams(sLayoutParams);
-
-        container.removeAllViews();
-        container.addView(progressBar);
-    }
-
-    private static void showImageError(Context context, ViewGroup container, @Nullable Integer errorPlaceholderId) {
-        int errorPlaceholder = (null == errorPlaceholderId) ? R.drawable.ic_broken_image : errorPlaceholderId;
-        displayImage(context, errorPlaceholder, container, errorPlaceholderId);
-    }
-
     private static <T> void displayImage(Context context, T image, ViewGroup container, @Nullable Integer errorPlaceholderId) {
         ImageView imageView = new ImageView(context);
         imageView.setLayoutParams(sLayoutParams);
@@ -166,6 +158,38 @@ public class MyImageLoader {
             showImageError(context, container, errorPlaceholderId);
             return;
         }
+
+        container.removeAllViews();
+        container.addView(imageView);
+    }
+
+    private static void showImageLoading(Context context, ViewGroup container, @Nullable Integer loadingPlaceholderId) {
+        View placeholderView;
+
+        if (null == loadingPlaceholderId) {
+            placeholderView = new ProgressBar(context);
+
+        }
+        else {
+            Drawable drawable = context.getResources().getDrawable(loadingPlaceholderId);
+            placeholderView = new ImageView(context);
+            ((ImageView) placeholderView).setImageDrawable(drawable);
+        }
+
+        placeholderView.setLayoutParams(sLayoutParams);
+
+        container.removeAllViews();
+        container.addView(placeholderView);
+    }
+
+    private static void showImageError(Context context, ViewGroup container, @Nullable Integer errorPlaceholderId) {
+        Drawable errorPlaceholder = context.getResources().getDrawable(
+                (null == errorPlaceholderId) ? R.drawable.ic_broken_image : errorPlaceholderId
+        );
+
+        ImageView imageView = new ImageView(context);
+        imageView.setLayoutParams(sLayoutParams);
+        imageView.setImageDrawable(errorPlaceholder);
 
         container.removeAllViews();
         container.addView(imageView);
