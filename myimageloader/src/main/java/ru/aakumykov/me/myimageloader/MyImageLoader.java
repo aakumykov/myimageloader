@@ -168,11 +168,11 @@ public class MyImageLoader {
 
         if (null == loadingPlaceholderId) {
             placeholderView = new ProgressBar(context);
-
         }
         else {
             Drawable drawable = context.getResources().getDrawable(loadingPlaceholderId);
             placeholderView = new ImageView(context);
+            ((ImageView) placeholderView).setScaleType(ImageView.ScaleType.CENTER);
             ((ImageView) placeholderView).setImageDrawable(drawable);
         }
 
@@ -188,6 +188,7 @@ public class MyImageLoader {
         );
 
         ImageView imageView = new ImageView(context);
+        imageView.setScaleType(ImageView.ScaleType.CENTER);
         imageView.setLayoutParams(sLayoutParams);
         imageView.setImageDrawable(errorPlaceholder);
 
